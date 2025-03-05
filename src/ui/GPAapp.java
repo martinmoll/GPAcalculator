@@ -2,6 +2,7 @@ package ui;
 
 import model.ClassInfo;
 import services.GPAservice;
+import db.DatabaseService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,12 +20,58 @@ public class GPAapp {
     private JLabel gpaLabel;
     private List<ClassInfo> classes;
     private GPAservice gpaService;
+    private DatabaseService dbService;
+    private String studentID;
 
     public GPAapp() {
         gpaService = new GPAservice();
+        dbService = new DatabaseService();
+        dbService.initDatabase(); // Initialize the database
 
+        // Show the login screen first
+        showLoginScreen();
+    }
+
+    private void showLoginScreen() {
+        JFrame loginFrame = new JFrame("Student Login");
+        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        loginFrame.setSize(300, 200);
+        loginFrame.setLayout(new GridLayout(3, 2, 10, 10));
+
+        JLabel idLabel = new JLabel("Student ID:");
+        JTextField idField = new JTextField();
+        JLabel nameLabel = new JLabel("Name:");
+        JTextField nameField = new JTextField();
+        JButton loginButton = new JButton("Login");
+
+        loginFrame.add(idLabel);
+        loginFrame.add(idField);
+        loginFrame.add(nameLabel);
+        loginFrame.add(nameField);
+        loginFrame.add(new JLabel()); // Spacer
+        loginFrame.add(loginButton);
+
+        loginButton.addActionListener(e -> {
+            String enteredID = idField.getText().trim();
+            String enteredName = nameField.getText().trim();
+            if (enteredID.isEmpty() || enteredName.isEmpty()) {
+                JOptionPane.showMessageDialog(loginFrame, "Please enter both Student ID and Name.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                studentID = enteredID;
+                if (!dbService.studentExists(studentID)) {
+                    dbService.saveStudent(studentID, enteredName);
+                }
+                loginFrame.dispose();
+                initializeMainApp();
+            }
+        });
+
+        loginFrame.setVisible(true);
+    }
+
+    private void initializeMainApp() {
         // Frame
-        frame = new JFrame("GPA Calculator");
+        frame = new JFrame("GPA Calculator - Student ID: " + studentID);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 400);
         frame.setLayout(new BorderLayout());
@@ -33,9 +80,17 @@ public class GPAapp {
         classPanel = new JPanel();
         classPanel.setLayout(new GridLayout(0, 3, 10, 10));
         classes = new ArrayList<>();
-        addInitialClasses();
 
-        //Buttons
+        // Load existing grades or add default classes
+        List<ClassInfo> savedClasses = dbService.loadGrades(studentID);
+        if (savedClasses.isEmpty()) {
+            addInitialClasses();
+        } else {
+            classes = savedClasses;
+            refreshClassPanel();
+        }
+
+        // Buttons
         calculateButton = new JButton("CALCULATE GPA");
         addClassButton = new JButton("ADD CLASS");
         removeClassButton = new JButton("REMOVE CLASS");
@@ -76,11 +131,7 @@ public class GPAapp {
         classes.add(new ClassInfo("ECON210"));
         classes.add(new ClassInfo("STAT110"));
 
-        for (ClassInfo ClassInfo : classes) {
-            classPanel.add(new JLabel(ClassInfo.getID()));
-            classPanel.add(ClassInfo.getClassField());
-            classPanel.add(new JLabel());
-        }
+        refreshClassPanel();
     }
 
     private void handleCalculateGPA(ActionEvent e) {
@@ -89,6 +140,9 @@ public class GPAapp {
             averageGradeLabel.setText("Average Grade: " + averageGrade);
             double gpa = gpaService.calculateGPA(classes);
             gpaLabel.setText("GPA: " + String.format("%.2f", gpa));
+
+            // Save grades to the database
+            dbService.saveGrades(studentID, classes);
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(frame, "Invalid grade input.", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -101,9 +155,7 @@ public class GPAapp {
             classes.add(newClass);
             classPanel.add(new JLabel(newClass.getID()));
             classPanel.add(newClass.getClassField());
-
             classPanel.add(new JLabel()); // Spacer
-
             classPanel.revalidate();
             classPanel.repaint();
         }
@@ -133,7 +185,6 @@ public class GPAapp {
         for (ClassInfo c : classes) {
             classPanel.add(new JLabel(c.getID()));
             classPanel.add(c.getClassField());
-
             classPanel.add(new JLabel()); // Spacer
         }
         classPanel.revalidate();
