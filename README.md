@@ -12,7 +12,8 @@ Upon clicking the `calculate GPA` button, both GPA and average grade(letter form
 
 **Entering id and name:**
 
-
+![alt text](image.png)
 
 **Grades, classes and calculation of gpa:**
 
+![alt text](image-1.png)
