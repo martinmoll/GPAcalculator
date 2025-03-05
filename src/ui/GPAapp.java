@@ -36,21 +36,25 @@ public class GPAapp {
         JFrame loginFrame = new JFrame("Student Login");
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         loginFrame.setSize(300, 200);
-        loginFrame.setLayout(new GridLayout(3, 2, 10, 10));
-
+    
+        // Create a main panel with padding
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayout(3, 2, 10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Add padding: top, left, bottom, right
+    
         JLabel idLabel = new JLabel("Student ID:");
         JTextField idField = new JTextField();
         JLabel nameLabel = new JLabel("Name:");
         JTextField nameField = new JTextField();
         JButton loginButton = new JButton("Login");
-
-        loginFrame.add(idLabel);
-        loginFrame.add(idField);
-        loginFrame.add(nameLabel);
-        loginFrame.add(nameField);
-        loginFrame.add(new JLabel()); // Spacer
-        loginFrame.add(loginButton);
-
+    
+        mainPanel.add(idLabel);
+        mainPanel.add(idField);
+        mainPanel.add(nameLabel);
+        mainPanel.add(nameField);
+        mainPanel.add(new JLabel()); // Spacer
+        mainPanel.add(loginButton);
+    
         loginButton.addActionListener(e -> {
             String enteredID = idField.getText().trim();
             String enteredName = nameField.getText().trim();
@@ -65,7 +69,9 @@ public class GPAapp {
                 initializeMainApp();
             }
         });
-
+    
+        // Add the main panel to the frame
+        loginFrame.add(mainPanel);
         loginFrame.setVisible(true);
     }
 
@@ -74,11 +80,12 @@ public class GPAapp {
         frame = new JFrame("GPA Calculator - Student ID: " + studentID);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 400);
-        frame.setLayout(new BorderLayout());
+        frame.setLayout(new BorderLayout(10,10));
 
         // Class panel
         classPanel = new JPanel();
         classPanel.setLayout(new GridLayout(0, 3, 10, 10));
+        classPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20)); // Padding
         classes = new ArrayList<>();
 
         // Load existing grades or add default classes
@@ -96,12 +103,14 @@ public class GPAapp {
         removeClassButton = new JButton("REMOVE CLASS");
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 15, 20));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 10, 20));  // Padding
         buttonPanel.add(addClassButton);
         buttonPanel.add(removeClassButton);
         buttonPanel.add(calculateButton);
 
         // Output
         outputPanel = new JPanel(new GridLayout(2, 1, 15, 15));
+        outputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 20)); // Padding
         averageGradeLabel = new JLabel("Average Grade: ");
         gpaLabel = new JLabel("GPA: ");
         outputPanel.add(averageGradeLabel);
